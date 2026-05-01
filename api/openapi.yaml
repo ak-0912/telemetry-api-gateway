@@ -1,0 +1,146 @@
+openapi: 3.0.3
+info:
+  title: Telemetry API Gateway
+  description: REST API for GPU telemetry stored in Postgres.
+  version: 1.0.0
+servers:
+  - url: /
+
+paths:
+  /api/v1/gpus:
+    get:
+      operationId: listGpus
+      summary: List all GPUs
+      description: Returns distinct GPU identifiers that have at least one telemetry row.
+      tags: [GPUs]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListGpusResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/v1/gpus/{id}/telemetry:
+    get:
+      operationId: getGpuTelemetry
+      summary: Query telemetry by GPU
+      description: >
+        Returns telemetry for the given GPU ordered by processed_at_unix_nano ascending.
+        Optional start_time and end_time are inclusive and filter on processed_at_unix_nano
+        (RFC3339 / RFC3339Nano).
+      tags: [Telemetry]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: start_time
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: Inclusive lower bound on processed event time (unix nano stored in DB).
+        - name: end_time
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: Inclusive upper bound on processed event time.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TelemetryListResponse"
+        "400":
+          description: Invalid time window
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+components:
+  schemas:
+    ListGpusResponse:
+      type: object
+      required: [gpus]
+      properties:
+        gpus:
+          type: array
+          items:
+            type: string
+
+    TelemetryEntry:
+      type: object
+      required:
+        - id
+        - metric_name
+        - gpu_id
+        - device
+        - uuid
+        - model_name
+        - host_name
+        - value
+        - labels_raw
+        - processed_at_unix_nano
+        - created_at
+      properties:
+        id:
+          type: integer
+          format: int64
+        metric_name:
+          type: string
+        gpu_id:
+          type: string
+        device:
+          type: string
+        uuid:
+          type: string
+        model_name:
+          type: string
+        host_name:
+          type: string
+        value:
+          type: number
+          format: double
+        labels_raw:
+          type: string
+        processed_at_unix_nano:
+          type: integer
+          format: int64
+        created_at:
+          type: string
+          format: date-time
+
+    TelemetryListResponse:
+      type: object
+      required: [entries]
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/TelemetryEntry"
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
