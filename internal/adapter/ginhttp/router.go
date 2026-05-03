@@ -13,6 +13,7 @@ func NewRouter(h *TelemetryHandler) http.Handler {
 	r.GET("/healthz", func(c *gin.Context) {
 		c.Status(http.StatusNoContent)
 	})
+	registerSwaggerRoutes(r)
 	registerTelemetryRoutes(r.Group("/api/v1"), h)
 	return r
 }

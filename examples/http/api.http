@@ -1,0 +1,23 @@
+### Base (change host/port if needed)
+@base = http://localhost:8080
+
+### Health (204 No Content)
+GET {{base}}/healthz
+
+### Swagger UI (200 HTML — open `{{base}}/docs` in a browser for Try it out)
+GET {{base}}/docs
+
+### List GPUs (200 JSON)
+GET {{base}}/api/v1/gpus
+
+### Telemetry for GPU — all rows (no time filter). Load data: psql "$DATABASE_URL" -f examples/seed.sql
+GET {{base}}/api/v1/gpus/gpu-001/telemetry
+
+### Telemetry with time window (filters processed_at_unix_nano; must align with seed.sql)
+GET {{base}}/api/v1/gpus/gpu-001/telemetry?start_time=2026-05-01T00:00:00Z&end_time=2026-05-04T00:00:00Z
+
+### Invalid: bad start_time (400 JSON error)
+GET {{base}}/api/v1/gpus/gpu-001/telemetry?start_time=not-a-date
+
+### Invalid: start after end (400) — service rejects window
+GET {{base}}/api/v1/gpus/gpu-001/telemetry?start_time=2026-05-10T00:00:00Z&end_time=2026-05-01T14:15:00Z

@@ -12,11 +12,12 @@ type Config struct {
 func Load() Config {
 	db := os.Getenv("DATABASE_URL")
 	if db == "" {
-		db = "postgres://postgres:postgres@localhost:5433/telemetry?sslmode=disable"
+		db = defaultDatabaseURL()
 	}
 	addr := os.Getenv("HTTP_ADDR")
 	if addr == "" {
-		addr = ":8080"
+		// 0.0.0.0 so Docker-published ports (e.g. 8081:8080) reach the server; :8080 alone can be IPv6-only on some hosts.
+		addr = "0.0.0.0:8080"
 	}
 	return Config{DatabaseURL: db, HTTPAddr: addr}
 }

@@ -9,8 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gin-gonic/gin"
-
 	"telemetry-api-gateway/internal/domain"
 )
 
@@ -36,9 +34,7 @@ func (s *stubTelemetryQuery) ListTelemetryForGPU(_ context.Context, gpuID string
 }
 
 func newTestRouter(h *TelemetryHandler) http.Handler {
-	r := gin.New()
-	registerTelemetryRoutes(r.Group("/api/v1"), h)
-	return r
+	return NewRouter(h)
 }
 
 func TestTelemetryHandler_ListGPUs_OK(t *testing.T) {
@@ -115,7 +111,7 @@ func TestTelemetryHandler_GetGPUTelemetry_TimeFiltersPassed(t *testing.T) {
 	srv := newTestRouter(h)
 
 	rr := httptest.NewRecorder()
-	u := "/api/v1/gpus/gpu-a/telemetry?start_time=2024-01-02T15:04:05Z&end_time=2024-01-03T15:04:05Z"
+	u := "/api/v1/gpus/gpu-a/telemetry?start_time=2026-05-01T14:15:00Z&end_time=2026-05-03T06:30:00Z"
 	req := httptest.NewRequest(http.MethodGet, u, nil)
 	srv.ServeHTTP(rr, req)
 
@@ -125,10 +121,10 @@ func TestTelemetryHandler_GetGPUTelemetry_TimeFiltersPassed(t *testing.T) {
 	if stub.lastStart == nil || stub.lastEnd == nil {
 		t.Fatal("expected start/end to be set")
 	}
-	if stub.lastStart.Format(time.RFC3339) != "2024-01-02T15:04:05Z" {
+	if stub.lastStart.Format(time.RFC3339) != "2026-05-01T14:15:00Z" {
 		t.Fatalf("start: %v", stub.lastStart)
 	}
-	if stub.lastEnd.Format(time.RFC3339) != "2024-01-03T15:04:05Z" {
+	if stub.lastEnd.Format(time.RFC3339) != "2026-05-03T06:30:00Z" {
 		t.Fatalf("end: %v", stub.lastEnd)
 	}
 }

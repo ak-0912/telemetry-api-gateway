@@ -3,10 +3,10 @@
   "dockerComposeFile": "docker-compose.yml",
   "service": "app",
   "workspaceFolder": "/workspace",
-  "forwardPorts": [8080],
+  "forwardPorts": [8081],
   "portsAttributes": {
-    "8080": {
-      "label": "API"
+    "8081": {
+      "label": "API (host; app listens on :8080 in container)"
     }
   },
   "remoteUser": "vscode",

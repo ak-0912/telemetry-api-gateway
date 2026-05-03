@@ -1,7 +1,13 @@
 openapi: 3.0.3
 info:
   title: Telemetry API Gateway
-  description: REST API for GPU telemetry stored in Postgres.
+  description: |
+    REST API for GPU telemetry stored in Postgres.
+
+    **Interactive docs:** `/docs` (loads `/openapi.yaml`).
+
+    Optional `start_time` / `end_time` filter **inclusively** on `processed_at_unix_nano` (not `created_at`).
+    Prefer RFC3339 / RFC3339Nano; the server accepts additional query-string normalizations.
   version: 1.0.0
 servers:
   - url: /
@@ -31,10 +37,7 @@ paths:
     get:
       operationId: getGpuTelemetry
       summary: Query telemetry by GPU
-      description: >
-        Returns telemetry for the given GPU ordered by processed_at_unix_nano ascending.
-        Optional start_time and end_time are inclusive and filter on processed_at_unix_nano
-        (RFC3339 / RFC3339Nano).
+      description: Returns telemetry for the GPU, ordered by `processed_at_unix_nano` ascending. Optional `start_time` / `end_time` are inclusive filters on that column.
       tags: [Telemetry]
       parameters:
         - name: id

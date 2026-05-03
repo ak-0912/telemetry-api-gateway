@@ -2,8 +2,10 @@ package bootstrap
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -41,7 +43,8 @@ var Module = fx.Module("telemetry-api-gateway",
 func newPool(lc fx.Lifecycle, cfg config.Config) (*pgxpool.Pool, error) {
 	pool, err := pgxpool.New(context.Background(), cfg.DatabaseURL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w\npostgres: check DATABASE_URL / DATABASE_HOST; from a container the DB must listen on 0.0.0.0 (not only 127.0.0.1) on the host port (default 5433). attempted: %s",
+			err, redactPostgresURL(cfg.DatabaseURL))
 	}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -53,6 +56,20 @@ func newPool(lc fx.Lifecycle, cfg config.Config) (*pgxpool.Pool, error) {
 		},
 	})
 	return pool, nil
+}
+
+func redactPostgresURL(raw string) string {
+	u, err := url.Parse(raw)
+	if err != nil || u.User == nil {
+		return raw
+	}
+	name := u.User.Username()
+	if _, set := u.User.Password(); set {
+		u.User = url.UserPassword(name, "***")
+	} else {
+		u.User = url.User(name)
+	}
+	return u.String()
 }
 
 func registerHTTPServer(lc fx.Lifecycle, cfg config.Config, h http.Handler) {

@@ -1,0 +1,17 @@
+{
+  "entries": [
+    {
+      "id": 1,
+      "metric_name": "util",
+      "gpu_id": "gpu-a",
+      "device": "cuda:0",
+      "uuid": "00000000-0000-0000-0000-000000000001",
+      "model_name": "A100",
+      "host_name": "node-1",
+      "value": 0.85,
+      "labels_raw": "{}",
+      "processed_at_unix_nano": 1777644900000000000,
+      "created_at": "2026-05-01T14:15:00Z"
+    }
+  ]
+}

@@ -82,14 +82,32 @@ func parseTimeWindow(r *http.Request) (start, end *time.Time, err error) {
 }
 
 func parseRFC3339Like(s string) (time.Time, error) {
+	s = normalizeTimeQueryParam(s)
 	if t, err := time.Parse(time.RFC3339Nano, s); err == nil {
 		return t, nil
 	}
-	t, err := time.Parse(time.RFC3339, s)
-	if err != nil {
-		return time.Time{}, errors.New("start_time and end_time must be RFC3339 or RFC3339Nano timestamps")
+	if t, err := time.Parse(time.RFC3339, s); err == nil {
+		return t, nil
 	}
-	return t, nil
+	return time.Time{}, errors.New("start_time and end_time must be parseable times (RFC3339 / RFC3339Nano; space between date and time allowed; +00 or +0000 suffix means UTC)")
+}
+
+// normalizeTimeQueryParam accepts common non-RFC forms from URLs, SQL, and logs:
+//   "2026-05-01 08:00:00+00"  -> "2026-05-01T08:00:00Z"
+//   "2026-05-01T08:00:00+00"  -> "2026-05-01T08:00:00Z"
+//   "2026-05-01T08:00:00+0000" -> "2026-05-01T08:00:00Z"
+func normalizeTimeQueryParam(s string) string {
+	s = strings.TrimSpace(s)
+	if len(s) >= 11 && s[10] == ' ' && !strings.Contains(s, "T") {
+		s = s[:10] + "T" + strings.TrimSpace(s[11:])
+	}
+	switch {
+	case strings.HasSuffix(s, "+0000") && strings.Count(s, "+") == 1:
+		s = strings.TrimSuffix(s, "+0000") + "Z"
+	case strings.HasSuffix(s, "+00") && !strings.Contains(s, "+00:") && strings.Count(s, "+") == 1:
+		s = strings.TrimSuffix(s, "+00") + "Z"
+	}
+	return strings.TrimSpace(s)
 }
 
 type listGpusResponse struct {
