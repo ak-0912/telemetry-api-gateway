@@ -6,7 +6,7 @@
   "forwardPorts": [8081],
   "portsAttributes": {
     "8081": {
-      "label": "API (host; app listens on :8080 in container)"
+      "label": "API (host; app listens on :8081 in container)"
     }
   },
   "remoteUser": "vscode",
