@@ -1,11 +1,11 @@
 # API gateway dev container only.
 #
-# Postgres runs in a *separate* devcontainer/compose (sibling stack). That stack publishes 5433:5432,
-# so from this container you reach it via the Docker host — not hostname `db` (that name only exists
-# on the DB stack’s network). To use hostname `db` instead, attach both stacks to the same external
-# Docker network and set DATABASE_URL to postgres://telemetry:telemetry@db:5432/telemetry
+# Postgres runs in a *separate* container (another compose stack). That stack typically publishes
+# 5433:5432 on the host, so from this container reach it via host.docker.internal:5433 — not `db`
+# (that hostname only exists on the DB stack’s network). To use hostname `db`, attach both stacks
+# to the same external Docker network and set DATABASE_URL to postgres://telemetry:telemetry@db:5432/telemetry?sslmode=disable
 #
-# Credentials match the telemetry-db compose (user/db telemetry).
+# Credentials match the telemetry DB stack (user/db telemetry).
 
 services:
   app:
@@ -21,10 +21,10 @@ services:
       HTTP_ADDR: 0.0.0.0:8080
       DATABASE_URL: ${DATABASE_URL:-postgres://telemetry:telemetry@host.docker.internal:5433/telemetry?sslmode=disable}
       PGPORT: "5433"
+      PGHOST: host.docker.internal
       PGUSER: telemetry
       PGPASSWORD: telemetry
       PGDATABASE: telemetry
-    # Host 8081 -> container 8080 (avoid clash with Cursor on localhost:8080). Recreate container after changing this.
     ports:
       - "127.0.0.1:8081:8080"
     networks:

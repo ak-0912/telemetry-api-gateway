@@ -2,7 +2,7 @@
 
 These routes are **GET** only: there is **no JSON request body**. Send parameters in the **path** and **query string**.
 
-- **Base URL:** default **`http://localhost:8080`** (matches `HTTP_ADDR` `0.0.0.0:8080`). **Swagger UI** at **`/docs`**, OpenAPI YAML at **`/openapi.yaml`** (same host/port). If the devcontainer publishes **`8081→8080`** to the Mac, use **`http://localhost:8081`** on the host (still **`http://localhost:8080`** from inside the container).
+- **Base URL:** host **`make run`** uses **`http://localhost:18080`** when **`HTTP_ADDR`** is unset ([`Makefile`](../Makefile)). **Swagger UI** at **`/docs`**, OpenAPI at **`/openapi.yaml`**. Devcontainer on the Mac: usually **`http://localhost:8081`** (maps to **`:8080`** in the container). To use **8080** on the host: **`HTTP_ADDR=0.0.0.0:8080 make run`**.
 
 Files:
 
@@ -37,7 +37,7 @@ Or avoid `+` entirely: `...start_time=2026-05-01T08:00:00Z&end_time=2026-05-03T1
 
 ## Connection refused
 
-1. **Match host/port to where the process listens.** Host-only `go run` / `make run` on the Mac → **`http://127.0.0.1:8080/healthz`**. API in the dev container with **`8081:8080`** published → **`http://127.0.0.1:8081/healthz`** on the Mac (that map does **not** reach a process that only runs on the host).
+1. **Match host/port to where the process listens.** Host **`make run`** ( **`HTTP_ADDR`** unset) → **`http://127.0.0.1:18080/healthz`**. Bare **`go run ./cmd/api`** still defaults config to **`:8080`**. Dev container with **`8081:8080`** published → **`http://127.0.0.1:8081/healthz`** on the Mac.
 
 2. **Recreate the dev container** after changing `.devcontainer/docker-compose.yml` ports (`Dev Containers: Rebuild Container`).
 

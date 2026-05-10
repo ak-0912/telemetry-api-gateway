@@ -1,5 +1,5 @@
-### Base (change host/port if needed)
-@base = http://localhost:8080
+### Base (host `make run` defaults to :18080 — devcontainer Mac host often :8081)
+@base = http://localhost:18080
 
 ### Health (204 No Content)
 GET {{base}}/healthz

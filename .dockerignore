@@ -1,0 +1,5 @@
+.git
+.devcontainer
+examples
+*.md
+.DS_Store

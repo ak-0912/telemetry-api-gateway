@@ -9,8 +9,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gin-gonic/gin"
+
 	"telemetry-api-gateway/internal/domain"
 )
+
+func init() {
+	gin.SetMode(gin.TestMode)
+}
 
 type stubTelemetryQuery struct {
 	gpuIDs    []string
@@ -33,14 +39,23 @@ func (s *stubTelemetryQuery) ListTelemetryForGPU(_ context.Context, gpuID string
 	return s.telemetry, s.telErr
 }
 
-func newTestRouter(h *TelemetryHandler) http.Handler {
-	return NewRouter(h)
+func TestNewRouter_Healthz(t *testing.T) {
+	h := NewTelemetryHandler(&stubTelemetryQuery{})
+	srv := NewRouter(h)
+
+	rr := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
+	srv.ServeHTTP(rr, req)
+
+	if rr.Code != http.StatusNoContent {
+		t.Fatalf("status %d", rr.Code)
+	}
 }
 
 func TestTelemetryHandler_ListGPUs_OK(t *testing.T) {
 	stub := &stubTelemetryQuery{gpuIDs: []string{"gpu-a", "gpu-b"}}
 	h := NewTelemetryHandler(stub)
-	srv := newTestRouter(h)
+	srv := NewRouter(h)
 
 	rr := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/gpus", nil)
@@ -61,7 +76,7 @@ func TestTelemetryHandler_ListGPUs_OK(t *testing.T) {
 func TestTelemetryHandler_ListGPUs_ServiceError(t *testing.T) {
 	stub := &stubTelemetryQuery{listErr: errors.New("db down")}
 	h := NewTelemetryHandler(stub)
-	srv := newTestRouter(h)
+	srv := NewRouter(h)
 
 	rr := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/gpus", nil)
@@ -84,7 +99,7 @@ func TestTelemetryHandler_GetGPUTelemetry_OK(t *testing.T) {
 		},
 	}
 	h := NewTelemetryHandler(stub)
-	srv := newTestRouter(h)
+	srv := NewRouter(h)
 
 	rr := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/gpus/gpu-a/telemetry", nil)
@@ -108,7 +123,7 @@ func TestTelemetryHandler_GetGPUTelemetry_OK(t *testing.T) {
 func TestTelemetryHandler_GetGPUTelemetry_TimeFiltersPassed(t *testing.T) {
 	stub := &stubTelemetryQuery{}
 	h := NewTelemetryHandler(stub)
-	srv := newTestRouter(h)
+	srv := NewRouter(h)
 
 	rr := httptest.NewRecorder()
 	u := "/api/v1/gpus/gpu-a/telemetry?start_time=2026-05-01T14:15:00Z&end_time=2026-05-03T06:30:00Z"
@@ -132,7 +147,7 @@ func TestTelemetryHandler_GetGPUTelemetry_TimeFiltersPassed(t *testing.T) {
 func TestTelemetryHandler_GetGPUTelemetry_InvalidStartTime(t *testing.T) {
 	stub := &stubTelemetryQuery{}
 	h := NewTelemetryHandler(stub)
-	srv := newTestRouter(h)
+	srv := NewRouter(h)
 
 	rr := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/gpus/gpu-a/telemetry?start_time=not-a-date", nil)
@@ -146,7 +161,7 @@ func TestTelemetryHandler_GetGPUTelemetry_InvalidStartTime(t *testing.T) {
 func TestTelemetryHandler_GetGPUTelemetry_InvalidTimeWindowFromService(t *testing.T) {
 	stub := &stubTelemetryQuery{telErr: domain.ErrInvalidTimeWindow}
 	h := NewTelemetryHandler(stub)
-	srv := newTestRouter(h)
+	srv := NewRouter(h)
 
 	rr := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/gpus/gpu-a/telemetry", nil)
@@ -160,7 +175,7 @@ func TestTelemetryHandler_GetGPUTelemetry_InvalidTimeWindowFromService(t *testin
 func TestTelemetryHandler_GetGPUTelemetry_ServiceError(t *testing.T) {
 	stub := &stubTelemetryQuery{telErr: errors.New("db")}
 	h := NewTelemetryHandler(stub)
-	srv := newTestRouter(h)
+	srv := NewRouter(h)
 
 	rr := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/api/v1/gpus/gpu-a/telemetry", nil)

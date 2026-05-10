@@ -43,7 +43,7 @@ var Module = fx.Module("telemetry-api-gateway",
 func newPool(lc fx.Lifecycle, cfg config.Config) (*pgxpool.Pool, error) {
 	pool, err := pgxpool.New(context.Background(), cfg.DatabaseURL)
 	if err != nil {
-		return nil, fmt.Errorf("%w\npostgres: check DATABASE_URL / DATABASE_HOST; from a container the DB must listen on 0.0.0.0 (not only 127.0.0.1) on the host port (default 5433). attempted: %s",
+		return nil, fmt.Errorf("%w\npostgres: check DATABASE_URL / DATABASE_HOST; from a container the DB must listen on 0.0.0.0 (not only 127.0.0.1) on the host port (default 5433). attempted: %s\nhint: ensure Postgres is running and reachable (e.g. sibling compose publishing 5433:5432 on the host)",
 			err, redactPostgresURL(cfg.DatabaseURL))
 	}
 	lc.Append(fx.Hook{

@@ -27,14 +27,13 @@ func (s *QueryService) ListTelemetryForGPU(ctx context.Context, gpuID string, st
 	if start != nil && end != nil && start.After(*end) {
 		return nil, domain.ErrInvalidTimeWindow
 	}
-	var startNano, endNano *int64
-	if start != nil {
-		n := start.UnixNano()
-		startNano = &n
+	return s.repo.ListByGPU(ctx, gpuID, unixNanoPtr(start), unixNanoPtr(end))
+}
+
+func unixNanoPtr(t *time.Time) *int64 {
+	if t == nil {
+		return nil
 	}
-	if end != nil {
-		n := end.UnixNano()
-		endNano = &n
-	}
-	return s.repo.ListByGPU(ctx, gpuID, startNano, endNano)
+	n := t.UnixNano()
+	return &n
 }
