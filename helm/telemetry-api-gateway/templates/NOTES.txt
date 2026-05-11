@@ -1,0 +1,18 @@
+1. Get the application URL:
+{{- if .Values.ingress.enabled }}
+  {{- range .Values.ingress.hosts }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}{{ (index .paths 0).path }}
+  {{- end }}
+{{- else }}
+  kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "telemetry-api-gateway.fullname" . }} 8080:{{ .Values.service.port }}
+  http://127.0.0.1:8080
+{{- end }}
+
+2. Health and docs endpoints:
+  /healthz
+  /docs
+  /openapi.yaml
+
+3. Check Postgres from the cluster (app image has no shell):
+   Secret: {{ include "telemetry-api-gateway.secretName" . }}
+   See README "Check Postgres from the cluster" for kubectl/psql one-liners.

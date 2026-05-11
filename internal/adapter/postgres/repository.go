@@ -1,3 +1,4 @@
+// Package postgres implements the telemetry.Repository port using PostgreSQL.
 package postgres
 
 import (
@@ -10,18 +11,20 @@ import (
 	"telemetry-api-gateway/internal/domain"
 )
 
-// TelemetryRepository implements apptelemetry.Repository using Postgres.
+// Compile-time check: *TelemetryRepository satisfies apptelemetry.Repository.
+var _ apptelemetry.Repository = (*TelemetryRepository)(nil)
+
+// TelemetryRepository is a Postgres-backed implementation of apptelemetry.Repository.
 type TelemetryRepository struct {
 	pool *pgxpool.Pool
 }
 
-var _ apptelemetry.Repository = (*TelemetryRepository)(nil)
-
-// NewTelemetryRepository creates a Postgres-backed repository.
+// NewTelemetryRepository creates a TelemetryRepository backed by the given connection pool.
 func NewTelemetryRepository(pool *pgxpool.Pool) *TelemetryRepository {
 	return &TelemetryRepository{pool: pool}
 }
 
+// ListDistinctGPUIDs returns every gpu_id present in the telemetry table, sorted ascending.
 func (r *TelemetryRepository) ListDistinctGPUIDs(ctx context.Context) ([]string, error) {
 	const q = `SELECT DISTINCT gpu_id FROM telemetry ORDER BY gpu_id`
 	rows, err := r.pool.Query(ctx, q)
@@ -44,6 +47,8 @@ func (r *TelemetryRepository) ListDistinctGPUIDs(ctx context.Context) ([]string,
 	return ids, nil
 }
 
+// ListByGPU returns telemetry rows for the given GPU, ordered by processed_at_unix_nano ASC.
+// Both time bounds are optional (nil = unbounded) and inclusive.
 func (r *TelemetryRepository) ListByGPU(ctx context.Context, gpuID string, startUnixNano, endUnixNano *int64) ([]domain.Telemetry, error) {
 	const q = `
 SELECT id, metric_name, gpu_id, device, uuid, model_name, host_name, value, labels_raw, processed_at_unix_nano, created_at

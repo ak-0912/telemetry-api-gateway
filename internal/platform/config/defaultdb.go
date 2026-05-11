@@ -11,8 +11,10 @@ import (
 	"time"
 )
 
-// defaultDatabaseURL picks a sensible Postgres URL when DATABASE_URL is unset.
-// It prefers hosts that accept TCP on the DB port (published on the Docker host).
+// defaultDatabaseURL builds a Postgres URL from individual DATABASE_* env vars.
+// When DATABASE_HOST is unset it probes a list of candidate hosts (gateway IP,
+// Docker bridge, host.docker.internal, 127.0.0.1) and picks the first one that
+// accepts a TCP connection on the database port.
 func defaultDatabaseURL() string {
 	user := getenvDefault("DATABASE_USER", "telemetry")
 	pass := getenvDefault("DATABASE_PASSWORD", "telemetry")

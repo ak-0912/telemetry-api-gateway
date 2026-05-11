@@ -8,6 +8,8 @@ import (
 	apidoc "telemetry-api-gateway/api"
 )
 
+// swaggerUIPage is a self-contained HTML page that loads Swagger UI from a CDN
+// and points it at the embedded /openapi.yaml served by this binary.
 const swaggerUIPage = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,15 +36,15 @@ const swaggerUIPage = `<!DOCTYPE html>
 </body>
 </html>`
 
+// registerSwaggerRoutes serves /docs, /docs/, and /openapi.yaml.
 func registerSwaggerRoutes(r gin.IRoutes) {
 	r.GET("/openapi.yaml", func(c *gin.Context) {
 		c.Data(http.StatusOK, "application/yaml; charset=utf-8", apidoc.OpenAPIYAML)
 	})
-	doc := func(c *gin.Context) {
+	serveDocsPage := func(c *gin.Context) {
 		c.Header("Cache-Control", "no-cache")
 		c.Data(http.StatusOK, "text/html; charset=utf-8", []byte(swaggerUIPage))
 	}
-	for _, path := range []string{"/docs", "/docs/"} {
-		r.GET(path, doc)
-	}
+	r.GET("/docs", serveDocsPage)
+	r.GET("/docs/", serveDocsPage)
 }

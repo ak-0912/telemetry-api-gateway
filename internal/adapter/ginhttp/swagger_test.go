@@ -13,7 +13,6 @@ func TestSwaggerRoutes_DocsAndOpenAPI(t *testing.T) {
 	r := NewRouter(h)
 
 	for _, path := range []string{"/docs", "/docs/", "/openapi.yaml"} {
-		path := path
 		t.Run(path, func(t *testing.T) {
 			t.Parallel()
 			req := httptest.NewRequest(http.MethodGet, path, nil)

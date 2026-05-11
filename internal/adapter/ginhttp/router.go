@@ -6,13 +6,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// NewRouter mounts Gin routes (transport / driving adapter).
+// NewRouter builds the root http.Handler with all routes, middleware, and probes.
 func NewRouter(h *TelemetryHandler) http.Handler {
 	r := gin.New()
 	r.Use(gin.Logger(), gin.Recovery())
-	r.GET("/healthz", func(c *gin.Context) {
-		c.Status(http.StatusNoContent)
-	})
+
+	r.GET("/healthz", func(c *gin.Context) { c.Status(http.StatusNoContent) })
+
 	registerSwaggerRoutes(r)
 	registerTelemetryRoutes(r.Group("/api/v1"), h)
 	return r

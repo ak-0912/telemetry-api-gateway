@@ -7,12 +7,12 @@ import (
 	"telemetry-api-gateway/internal/domain"
 )
 
-// QueryService implements read use cases for telemetry (application layer).
+// QueryService implements read-only use cases for GPU telemetry.
 type QueryService struct {
 	repo Repository
 }
 
-// NewQueryService wires the query service with its repository port.
+// NewQueryService creates a QueryService backed by the given Repository.
 func NewQueryService(repo Repository) *QueryService {
 	return &QueryService{repo: repo}
 }
@@ -22,7 +22,9 @@ func (s *QueryService) ListGPUsWithTelemetry(ctx context.Context) ([]string, err
 	return s.repo.ListDistinctGPUIDs(ctx)
 }
 
-// ListTelemetryForGPU returns telemetry for a GPU ordered by processed time, optionally filtered in time (inclusive).
+// ListTelemetryForGPU returns telemetry for a GPU, optionally filtered by an
+// inclusive [start, end] time window. Returns domain.ErrInvalidTimeWindow when
+// start is strictly after end.
 func (s *QueryService) ListTelemetryForGPU(ctx context.Context, gpuID string, start, end *time.Time) ([]domain.Telemetry, error) {
 	if start != nil && end != nil && start.After(*end) {
 		return nil, domain.ErrInvalidTimeWindow
@@ -30,6 +32,8 @@ func (s *QueryService) ListTelemetryForGPU(ctx context.Context, gpuID string, st
 	return s.repo.ListByGPU(ctx, gpuID, unixNanoPtr(start), unixNanoPtr(end))
 }
 
+// unixNanoPtr converts a *time.Time to a *int64 (nanoseconds since epoch).
+// Returns nil when t is nil, which the repository interprets as "unbounded".
 func unixNanoPtr(t *time.Time) *int64 {
 	if t == nil {
 		return nil
