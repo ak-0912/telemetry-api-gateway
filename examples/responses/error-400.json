@@ -1,3 +1,0 @@
-{
-  "error": "start_time and end_time must be RFC3339 or RFC3339Nano"
-}

@@ -4,7 +4,6 @@ API Requirements
 
 Program : go
 REST APIs - Expose REST (OpenAPI) on the API gateway for clients.
-Use REST for the API that reads the DB and matches your OpenAPI spec; consider gRPC later for internal service-to-service traffic if you need it, not as a replacement for the specified REST surface.
 
 DB stores - 
 CREATE TABLE IF NOT EXISTS telemetry (
@@ -42,6 +41,6 @@ postgres:
     restart: unless-stopped
     environment:
       POSTGRES_DB: telemetry
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: telemetry
+      POSTGRES_PASSWORD: telemetry
 

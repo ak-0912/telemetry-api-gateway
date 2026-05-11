@@ -18,7 +18,7 @@ REST API exposing GPU telemetry backed by PostgreSQL.
 
 The HTTP API uses **[Gin](https://github.com/gin-gonic/gin)** for routing and JSON, **[Uber Fx](https://github.com/uber-go/fx)** for compile-time dependency injection and lifecycle (`OnStart` / `OnStop`), and `net/http` for serving. Entry: [`cmd/api/main.go`](cmd/api/main.go).
 
-The OpenAPI contract lives in [`api/openapi.yaml`](api/openapi.yaml). With the server running, open **Swagger UI** at **`/docs`** on the same host and port as the API. **`make run`** / **`make run-local`** default to **`http://127.0.0.1:18080/docs`** when **`HTTP_ADDR`** is unset (avoids `:8080` clashes on the host). Use **`HTTP_ADDR=0.0.0.0:8080 make run`** if you want port **8080**. In the dev container, Compose sets **`HTTP_ADDR`** to **`:8080`**; from the Mac use **`http://127.0.0.1:8081/docs`** when Docker maps **`8081→8080`** (see [examples/README.md](examples/README.md)). The page loads **`/openapi.yaml`**; Swagger assets load from **unpkg**.
+The OpenAPI contract lives in [`api/openapi.yaml`](api/openapi.yaml). With the server running, open **Swagger UI** at **`/docs`** on the same host and port as the API. **`make run`** / **`make run-local`** default to **`http://127.0.0.1:18080/docs`** when **`HTTP_ADDR`** is unset (avoids `:8080` clashes on the host). Use **`HTTP_ADDR=0.0.0.0:8080 make run`** if you want port **8080**. In the dev container, Compose sets **`HTTP_ADDR`** to **`:8080`**; from the Mac use **`http://127.0.0.1:8081/docs`** when Docker maps **`8081→8080`**. The page loads **`/openapi.yaml`**; Swagger assets load from **unpkg**.
 
 ## Run the API
 
@@ -84,7 +84,7 @@ If you use **`database.existingSecret`**, replace **`telemetry-api-gateway`** be
 
 ```bash
 kubectl run -n telemetry netcheck --rm -i --restart=Never --image=busybox:1.36 \
-  --command -- sh -c 'nc -zv telemetry-telemetry-db-postgres 5432'
+  --command -- sh -c 'nc -zv telemetry-db-postgres 5432'
 ```
 
 Exit code **`0`** means something accepted the connection on that port (not a full auth check).
